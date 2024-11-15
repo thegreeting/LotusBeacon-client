@@ -37,6 +37,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   simple_logger: ^1.10.0
   flutter_riverpod: ^2.6.1
+  uuid: ^4.2.1
+  permission_handler: ^11.0.1
+  logging: ^1.2.0
 
 dev_dependencies:
   flutter_test:
