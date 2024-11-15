@@ -1,0 +1,1 @@
+Responsible for handling application configuration, routing, theme, startup, etc.
