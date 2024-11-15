@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lotusbeacon/presentation/page/home_page.dart';
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
@@ -25,7 +26,7 @@ class MyApp extends ConsumerWidget {
       ),
       themeMode: themeMode,
       routes: {
-        '/home': (context) => const Placeholder(),
+        '/home': (context) => const HomePage(),
       },
       initialRoute: '/home',
     );
