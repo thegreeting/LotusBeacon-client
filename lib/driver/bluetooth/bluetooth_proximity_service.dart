@@ -5,6 +5,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
+import 'package:logging/logging.dart';
 
 import '../../../application/config/logger.dart';
 import '../../domain/physical_proximity.dart';
@@ -19,11 +20,24 @@ class BleProximityService {
   Stream<PhysicalProximity> get proximityStream => _proximityController.stream;
 
   late final StreamSubscription _discoveredSubscription;
+  late final StreamSubscription _stateChangedSubscription;
 
   BleProximityService()
       : _centralManager = CentralManager(),
         _peripheralManager = PeripheralManager() {
+    hierarchicalLoggingEnabled = true;
+    _centralManager.logLevel = Level.INFO;
+    _peripheralManager.logLevel = Level.INFO;
+
     _discoveredSubscription = _centralManager.discovered.listen(_onDiscovered);
+    _stateChangedSubscription = _centralManager.stateChanged.listen(_onStateChanged);
+  }
+
+  void _onStateChanged(args) async {
+    logger.info('BLE State changed: ${args.state}');
+    if (args.state == BluetoothLowEnergyState.unauthorized && Platform.isAndroid) {
+      await _centralManager.authorize();
+    }
   }
 
   Future<void> startAdvertising(String rpid) async {
@@ -32,8 +46,10 @@ class BleProximityService {
     };
     final Uint8List data = utf8.encode(json.encode(advertiseData));
 
+    await _peripheralManager.removeAllServices();
+
     final service = GATTService(
-      uuid: UUID.short(100),
+      uuid: serviceUuid,
       isPrimary: true,
       includedServices: [],
       characteristics: [
@@ -42,35 +58,24 @@ class BleProximityService {
           value: data,
           descriptors: [],
         ),
-        GATTCharacteristic.mutable(
-          uuid: UUID.short(201),
-          properties: [
-            GATTCharacteristicProperty.read,
-            GATTCharacteristicProperty.write,
-            GATTCharacteristicProperty.writeWithoutResponse,
-            GATTCharacteristicProperty.notify,
-            GATTCharacteristicProperty.indicate,
-          ],
-          permissions: [
-            GATTCharacteristicPermission.read,
-            GATTCharacteristicPermission.write,
-          ],
-          descriptors: [],
-        ),
       ],
     );
 
     await _peripheralManager.addService(service);
     await _peripheralManager.startAdvertising(
       Advertisement(
-        name: Platform.isIOS || Platform.isMacOS ? 'LotusBeacon BLE Proximity' : null,
-        serviceData: Platform.isIOS || Platform.isMacOS
-            ? {}
-            : {
-                serviceUuid: data,
-              },
+        name: Platform.isWindows ? null : 'LotusBeacon',
+        manufacturerSpecificData: [
+          if (Platform.isWindows || Platform.isAndroid)
+            ManufacturerSpecificData(
+              id: 0x2e19, // 任意のメーカーID
+              data: data,
+            ),
+        ],
+        serviceUUIDs: [serviceUuid],
       ),
     );
+    logger.info('Started advertising with RPID: $rpid');
   }
 
   Future<void> startScanning() async {
@@ -81,11 +86,20 @@ class BleProximityService {
 
   void _onDiscovered(DiscoveredEventArgs args) {
     final peripheral = args.peripheral;
-    final manufacturerData = args.advertisement.manufacturerSpecificData.firstOrNull?.data;
+    logger.info('Discovered device: ${peripheral.uuid}, RSSI: ${args.rssi}');
 
-    if (manufacturerData != null) {
+    Uint8List? serviceData;
+    if (Platform.isIOS || Platform.isMacOS) {
+      // iOS/macOSの場合はサービスデータを確認
+      serviceData = args.advertisement.serviceData[serviceUuid];
+    } else {
+      // AndroidではManufacturerDataを確認
+      serviceData = args.advertisement.manufacturerSpecificData.firstOrNull?.data;
+    }
+
+    if (serviceData != null) {
       try {
-        final Map<String, dynamic> advertiseData = json.decode(utf8.decode(manufacturerData));
+        final Map<String, dynamic> advertiseData = json.decode(utf8.decode(serviceData));
 
         if (advertiseData.containsKey('rpid')) {
           final String rpid = advertiseData['rpid'];
@@ -109,7 +123,7 @@ class BleProximityService {
           _proximityController.add(proximity);
         }
       } catch (e) {
-        logger.severe('Error decoding manufacturer data: $e');
+        logger.severe('Error decoding data: $e');
       }
     }
   }
@@ -130,6 +144,7 @@ class BleProximityService {
 
   void dispose() {
     _discoveredSubscription.cancel();
+    _stateChangedSubscription.cancel();
     _proximityController.close();
   }
 }
