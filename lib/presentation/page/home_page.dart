@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../provider/bluetooth_provider.dart';
+
+import '../../usecase/bluetooth_provider.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -19,7 +20,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Future<void> _startBleServices() async {
     final service = ref.read(bleServiceProvider);
     final rpid = ref.read(rpidProvider);
-    
+
     await service.startAdvertising(rpid);
     await service.startScanning();
   }

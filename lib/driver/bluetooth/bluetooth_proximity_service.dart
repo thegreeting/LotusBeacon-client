@@ -5,8 +5,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
-// ignore: depend_on_referenced_packages
-import 'package:logging/logging.dart';
 
 import '../../../application/config/logger.dart';
 import '../../domain/physical_proximity.dart';
@@ -23,8 +21,8 @@ class BleProximityService {
   late final StreamSubscription _discoveredSubscription;
 
   BleProximityService()
-      : _centralManager = CentralManager()..logLevel = Level.INFO,
-        _peripheralManager = PeripheralManager()..logLevel = Level.INFO {
+      : _centralManager = CentralManager(),
+        _peripheralManager = PeripheralManager() {
     _discoveredSubscription = _centralManager.discovered.listen(_onDiscovered);
   }
 
