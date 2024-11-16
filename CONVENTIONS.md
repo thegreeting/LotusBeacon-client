@@ -1,3 +1,4 @@
 - Use riverpod_flutter for state management
 - Adopt a simplified packaging based on Clean Architecture to balance development efficiency, dividing concerns into domain, interface_adapter, presentation, and usecase
 - In the constructors of classes inheriting from StatelessWidget, use the notation SomeClass({super.key}) instead of super(key: key)
+- Write comments in English
