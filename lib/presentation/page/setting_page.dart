@@ -84,7 +84,7 @@ class SettingPage extends ConsumerWidget {
                           onPressed: hasSoftParticipatedOnEvent
                               ? null
                               : () async {
-                                  participateUserOnEventOrHardRegisterIfNeeded(
+                                  await participateUserOnEventOrHardRegisterIfNeeded(
                                     eventId: event.id,
                                     userId: userId,
                                   );
