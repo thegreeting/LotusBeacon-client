@@ -50,7 +50,7 @@ class PeepingPhysicalHandshake extends ConsumerWidget {
               );
             },
             loading: () => const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator.adaptive(),
             ),
             error: (error, stack) => Center(
               child: Text('Error: $error'),

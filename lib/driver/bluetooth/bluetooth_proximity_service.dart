@@ -9,19 +9,20 @@ import 'package:logging/logging.dart';
 import '../../../application/config/logger.dart';
 import '../../domain/physical_proximity.dart';
 
-class BleProximityService {
-  final BeaconBroadcast _beaconBroadcast = BeaconBroadcast();
-  static UUID serviceUuid = UUID.fromString('FFFF');
+const txPower = -59;
 
-  final CentralManager _centralManager;
-  final PeripheralManager _peripheralManager;
+class BleProximityService {
+  final UUID serviceUuid;
+
+  final _beaconBroadcast = BeaconBroadcast();
+  final _centralManager = CentralManager();
   final StreamController<LotusBeaconPhysicalHandshake> _proximityController =
       StreamController<LotusBeaconPhysicalHandshake>.broadcast();
 
   final Map<String, LotusBeaconPhysicalHandshake> _proximityData = {};
   Timer? _cycleTimer;
   bool _isAdvertising = false;
-  String? _currentRpid;
+  int? _currentRpid;
 
   Stream<List<LotusBeaconPhysicalHandshake>> get proximityDataStream =>
       _proximityController.stream.map((_) => _proximityData.values.toList());
@@ -31,7 +32,9 @@ class BleProximityService {
   late final StreamSubscription _discoveredSubscription;
   late final StreamSubscription _stateChangedSubscription;
 
-  BleProximityService() {
+  BleProximityService({
+    required String eventId,
+  }) : serviceUuid = UUID.fromString(eventId) {
     _initBeacon();
     _initBleScanner();
   }
@@ -65,30 +68,30 @@ class BleProximityService {
     }
   }
 
-  Future<void> startAdvertising(String rpid) async {
+  Future<void> startAdvertising(int rpid) async {
     await _beaconBroadcast
-        .setUUID('39ED98FF-2900-441A-802F-9C398FC199D2')
-        .setMajorId(0) // eventId用
-        .setMinorId(1) // userIndex用
-        .setIdentifier(rpid)
-        .setTransmissionPower(-59)
+        .setUUID(serviceUuid.toString())
+        .setMajorId(0) // eventUserIndex用
+        .setMinorId(196) // RPID用
+        .setIdentifier('') // not needed but just required
+        .setTransmissionPower(txPower)
         .start();
-    
+
     logger.info('Started advertising with RPID: $rpid');
   }
 
   Future<void> startScanning() async {
     logger.info('Start scanning');
     await _centralManager.startDiscovery(
-        // serviceUUIDs: [serviceUuid],
-        );
+      serviceUUIDs: [serviceUuid],
+    );
   }
 
-  Future<void> startCycle(String rpid) async {
+  Future<void> startCycle(int rpid) async {
     logger.info('BLE start cycle with RPID: $rpid');
     _currentRpid = rpid;
     _cycleTimer?.cancel();
-    _cycleTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
+    _cycleTimer = Timer.periodic(const Duration(seconds: 4), (timer) async {
       if (_isAdvertising) {
         await stopAdvertising();
         await startScanning();
@@ -108,39 +111,42 @@ class BleProximityService {
   }
 
   void _onDiscovered(DiscoveredEventArgs args) {
-    if (args.advertisement.manufacturerData != null) {
-      final data = args.advertisement.manufacturerData;
-      // Parse iBeacon manufacturer data
-      if (data != null && data.length >= 25 && data[0] == 0x4C && data[1] == 0x00) {
-        try {
-          final uuid = _extractUuid(data.sublist(4, 20));
-          final major = (data[20] << 8) + data[21];
-          final minor = (data[22] << 8) + data[23];
-          final txPower = data[24].toSigned(8);
+    if (args.advertisement.manufacturerSpecificData.isEmpty) {
+      return;
+    }
+    final manufacturerData = args.advertisement.manufacturerSpecificData[0].data;
+    // Parse iBeacon manufacturer data
+    if (manufacturerData.length >= 25 && manufacturerData[0] == 0x4C && manufacturerData[1] == 0x00) {
+      try {
+        final uuid = _extractUuid(manufacturerData.sublist(4, 20));
+        final major = (manufacturerData[20] << 8) + manufacturerData[21];
+        final minor = (manufacturerData[22] << 8) + manufacturerData[23];
+        final txPower = manufacturerData[24].toSigned(8);
 
-          final estimatedDistance = _estimateDistance(args.rssi, txPower);
-          final distance = estimatedDistance < 0.5
-              ? EstimatedDistance.immediate
-              : estimatedDistance < 3.0
-                  ? EstimatedDistance.near
-                  : EstimatedDistance.far;
+        final estimatedDistance = _estimateDistance(args.rssi, txPower);
+        final distance = estimatedDistance < 0.5
+            ? EstimatedDistance.immediate
+            : estimatedDistance < 3.0
+                ? EstimatedDistance.near
+                : EstimatedDistance.far;
 
-          final proximity = LotusBeaconPhysicalHandshake(
-            beaconId: args.peripheral.uuid.value.toString(),
-            rpid: uuid,
-            distance: distance,
-            estimatedDistance: estimatedDistance,
-            rssi: args.rssi,
-            lastDetectedAt: DateTime.now(),
-            eventId: major.toString(),
-            userIndex: minor.toString(),
-          );
+        final proximity = LotusBeaconPhysicalHandshake(
+          beaconId: args.peripheral.uuid.value.toString(),
+          rpid: uuid,
+          distance: distance,
+          estimatedDistance: estimatedDistance,
+          rssi: args.rssi,
+          txPower: txPower,
+          lastDetectedAt: DateTime.now(),
+          eventId: major.toString(),
+          userIndex: minor.toString(),
+        );
 
-          _proximityData[uuid] = proximity;
-          _proximityController.add(proximity);
-        } catch (e) {
-          logger.severe('Error parsing iBeacon data: $e');
-        }
+        _proximityData[uuid] = proximity;
+        _proximityController.add(proximity);
+        logger.info('Discovered $proximity');
+      } catch (e) {
+        logger.severe('Error parsing iBeacon data: $e');
       }
     }
   }
@@ -158,7 +164,7 @@ class BleProximityService {
 
   double _estimateDistance(int rssi, int txPower) {
     if (rssi == 0) return -1.0;
-    
+
     final ratio = rssi * 1.0 / txPower;
     if (ratio < 1.0) {
       return pow(ratio, 10).toDouble();

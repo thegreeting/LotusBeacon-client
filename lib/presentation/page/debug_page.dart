@@ -34,7 +34,7 @@ class DebugPage extends ConsumerWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                ref.read(overrideEeventIdProvider.notifier).state = overrideEventIdController.text;
+                ref.read(overrideEeventIdIndexProvider.notifier).state = overrideEventIdController.text;
               },
               child: const Text('Set Override Event Id'),
             ),

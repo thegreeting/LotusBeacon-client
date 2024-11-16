@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  beacon_broadcast:
+    dependency: "direct main"
+    description:
+      name: beacon_broadcast
+      sha256: "9aa58bcf83b9184adca8c5ed6a8c5d7286d07b48c8b809fdf5b1432d16574d86"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.1"
   bluetooth_low_energy:
     dependency: "direct main"
     description:
@@ -98,7 +106,7 @@ packages:
     source: hosted
     version: "1.1.1"
   collection:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: collection
       sha256: ee67cb0715911d28db6bf4af1026078bd6f0128b07a5f66fb2ed94ec6783c09a

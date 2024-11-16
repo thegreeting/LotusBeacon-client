@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lotusbeacon/presentation/organism/peeping_physical_handshake.dart';
 
 import '../../usecase/bluetooth_provider.dart';
-import '../organism/participants_listview.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -56,7 +56,8 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
       body: TabBarView(
         controller: _tabController,
         children: [
-          const ParticipantsListView(), // Replace with actual greetings data
+          const PeepingPhysicalHandshake(),
+          //const ParticipantsListView(), // Replace with actual greetings data
           Container(), // Placeholder for Settings content
         ],
       ),

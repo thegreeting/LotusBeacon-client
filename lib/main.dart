@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:lotusbeacon/application/app.dart';
 
 Future<void> main() async {
+  hierarchicalLoggingEnabled = true;
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     buildRunnableApp(

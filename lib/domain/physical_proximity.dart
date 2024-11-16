@@ -10,6 +10,7 @@ class PhysicalProximity {
   final EstimatedDistance distance;
   final double estimatedDistance;
   final int rssi;
+  final int txPower;
   final DateTime lastDetectedAt;
 
   PhysicalProximity({
@@ -17,6 +18,7 @@ class PhysicalProximity {
     required this.distance,
     required this.estimatedDistance,
     required this.rssi,
+    required this.txPower,
     required this.lastDetectedAt,
   });
 }
@@ -34,6 +36,7 @@ class LotusBeaconPhysicalHandshake extends PhysicalProximity {
     required super.distance,
     required super.estimatedDistance,
     required super.rssi,
+    required super.txPower,
     required super.lastDetectedAt,
   });
 }

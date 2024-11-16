@@ -1,20 +1,26 @@
 PODS:
+  - beacon_broadcast (0.0.1):
+    - Flutter
   - bluetooth_low_energy_darwin (0.0.1):
     - Flutter
     - FlutterMacOS
   - Flutter (1.0.0)
 
 DEPENDENCIES:
+  - beacon_broadcast (from `.symlinks/plugins/beacon_broadcast/ios`)
   - bluetooth_low_energy_darwin (from `.symlinks/plugins/bluetooth_low_energy_darwin/darwin`)
   - Flutter (from `Flutter`)
 
 EXTERNAL SOURCES:
+  beacon_broadcast:
+    :path: ".symlinks/plugins/beacon_broadcast/ios"
   bluetooth_low_energy_darwin:
     :path: ".symlinks/plugins/bluetooth_low_energy_darwin/darwin"
   Flutter:
     :path: Flutter
 
 SPEC CHECKSUMS:
+  beacon_broadcast: 2c2562111f7b7e0f1ab59487f6bc805805e3c9f3
   bluetooth_low_energy_darwin: 764d8d1ae5abefbcdb839e812b4b25c0061fcf8b
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
 
