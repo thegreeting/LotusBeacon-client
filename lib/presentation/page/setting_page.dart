@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lotusbeacon/usecase/auth_provider.dart';
 import 'package:lotusbeacon/usecase/event_provider.dart';
 import 'package:lotusbeacon/usecase/participants_provider.dart';
+import 'package:lotusbeacon/usecase/user_provider.dart';
 
 class SettingPage extends ConsumerWidget {
   const SettingPage({super.key});
@@ -11,6 +12,7 @@ class SettingPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final event = ref.watch(selectedEventProvider);
     final authStateAsync = ref.watch(authStateProvider);
+    final currentEventUserIndex = ref.watch(currenEventUserIndexProvider);
     final hasSoftParticipatedOnEvent = ref.watch(hasSoftParticipatedOnEventProvider(event.id));
 
     return Scaffold(
@@ -30,7 +32,7 @@ class SettingPage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Wallet Status',
+                      'Login Status',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 16),
@@ -41,6 +43,7 @@ class SettingPage extends ConsumerWidget {
                               children: [
                                 Text('Connected: ${authState.userId}'),
                                 const SizedBox(height: 8),
+                                Text('Event User Index: $currentEventUserIndex'),
                                 ElevatedButton(
                                   onPressed: () => ref.read(authProvider.notifier).signOut(),
                                   child: const Text('Disconnect'),
