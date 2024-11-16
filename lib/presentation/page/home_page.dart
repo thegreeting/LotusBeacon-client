@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../usecase/bluetooth_provider.dart';
+import '../../usecase/rpid_provider.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -34,7 +35,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final proximityAsync = ref.watch(proximityStreamProvider);
-    final rpid = ref.watch(rpidProvider);
+    final rpidAsync = ref.watch(rollingRpidProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -44,7 +45,11 @@ class _HomePageState extends ConsumerState<HomePage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text('My RPID: $rpid'),
+            child: rpidAsync.when(
+              data: (rpid) => Text('My RPID: $rpid'),
+              loading: () => const Text('Generating RPID...'),
+              error: (error, stack) => Text('Error: $error'),
+            ),
           ),
           Expanded(
             child: proximityAsync.when(
