@@ -16,7 +16,7 @@ final bleServiceFacadeProvider = Provider((ref) {
   final service = ref.watch(bleServiceProvider);
 
   // RPIDの変更を監視してBLEサイクルを更新
-  ref.listen(rollingRpidProvider, (previous, next) {
+  ref.listen(rpidProvider, (previous, next) {
     next.whenData((rpid) async {
       await service.startCycle(rpid);
     });

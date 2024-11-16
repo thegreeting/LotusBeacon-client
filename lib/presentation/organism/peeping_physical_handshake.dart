@@ -9,7 +9,7 @@ class PeepingPhysicalHandshake extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final proximityAsync = ref.watch(proximityStreamProvider);
-    final rpidAsync = ref.watch(rollingRpidProvider);
+    final rpidAsync = ref.watch(rpidProvider);
 
     return Column(
       children: [

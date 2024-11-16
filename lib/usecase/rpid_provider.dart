@@ -13,10 +13,10 @@ final rpidSeedProvider = Provider<String>((ref) {
 });
 
 /// 20秒ごとに更新されるRolling Proximity Identifier (RPID)を生成するプロバイダー
-final rollingRpidProvider = StreamProvider<int>((ref) {
+final rpidProvider = StreamProvider<int>((ref) {
   final seed = ref.watch(rpidSeedProvider);
 
-  return Stream<int>.periodic(const Duration(seconds: 20), (count) {
+  return Stream.periodic(const Duration(seconds: 20), (count) {
     logger.info('RPID count: $count');
     // 現在の時間を20秒間隔で切り捨てて、タイムウィンドウの開始時刻を取得
     final timeWindow = DateTime.now().millisecondsSinceEpoch ~/ 20000;
