@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../usecase/bluetooth_provider.dart';
+import '../organism/participants_listview.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -55,7 +56,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
       body: TabBarView(
         controller: _tabController,
         children: [
-          Container(), // Placeholder for Participants content
+          const ParticipantsListView(), // Replace with actual greetings data
           Container(), // Placeholder for Settings content
         ],
       ),

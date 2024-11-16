@@ -24,7 +24,22 @@ class ParticipantsListView extends ConsumerWidget {
                     child: Text('No mutual participants'),
                   );
                 }
-                return null;
+                return ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: participants.length,
+                  itemBuilder: (context, index) {
+                    final participant = participants[index];
+                    return Card(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(participant.user.displayName),
+                          Text(participant.user.bio),
+                        ],
+                      ),
+                    );
+                  },
+                );
               },
               loading: () => const Center(
                 child: CircularProgressIndicator.adaptive(),
@@ -60,13 +75,17 @@ class ParticipantsListView extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const Center(
-            child: CircularProgressIndicator.adaptive(),
+          loading: () => const SliverToBoxAdapter(
+            child: Center(
+              child: CircularProgressIndicator.adaptive(),
+            ),
           ),
-          error: (error, stack) => Center(
-            child: Text(
-              'Error: $error',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.error),
+          error: (error, stack) => SliverToBoxAdapter(
+            child: Center(
+              child: Text(
+                'Error: $error',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.error),
+              ),
             ),
           ),
         ),

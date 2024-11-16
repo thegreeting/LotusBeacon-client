@@ -37,6 +37,18 @@ class Greeting {
     }
   }
 
+  GreetingStatus get status {
+    if (postUserId == targetUserId) {
+      return GreetingStatus.sameUser;
+    } else if (numTokens >= 2) {
+      return GreetingStatus.mutual;
+    } else if (numTokens == 1) {
+      return GreetingStatus.sent;
+    } else {
+      return GreetingStatus.none;
+    }
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
