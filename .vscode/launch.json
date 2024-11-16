@@ -13,6 +13,29 @@
                 "--web-renderer",
                 "html",
             ]
+        },
+        {
+            "name": "ken-iphone",
+            "request": "launch",
+            "type": "dart",
+            "internalConsoleOptions": "openOnSessionStart",
+            "deviceId": "00008140-001259A13082201C"
+        },
+        {
+            "name": "ken-ipadmini",
+            "request": "launch",
+            "type": "dart",
+            "internalConsoleOptions": "openOnSessionStart",
+            "deviceId": "00008110-000865D83C62801E"
+        },
+    ],
+    "compounds": [
+        {
+            "name": "Multiple Run",
+            "configurations": [
+                "ken-iphone",
+                "ken-ipadmini"
+            ]
         }
     ]
 }
