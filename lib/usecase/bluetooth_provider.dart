@@ -6,6 +6,10 @@ import '../domain/physical_proximity.dart';
 import '../driver/bluetooth/bluetooth_proximity_service.dart';
 import 'rpid_provider.dart';
 
+class RegistrationRequiredException implements Exception {
+  const RegistrationRequiredException();
+}
+
 // 基本のBLEサービスプロバイダ
 final bleServiceProvider = Provider((ref) {
   final event = ref.watch(selectedEventProvider);
@@ -17,7 +21,7 @@ final bleServiceFacadeProvider = Provider((ref) {
   final service = ref.watch(bleServiceProvider);
   final eventUserIndex = ref.watch(currenEventUserIndexProvider);
   if (eventUserIndex == null) {
-    throw Exception('Registration is required to start sensing.');
+    throw const RegistrationRequiredException();
   }
 
   // RPIDの変更を監視してBLEサイクルを更新

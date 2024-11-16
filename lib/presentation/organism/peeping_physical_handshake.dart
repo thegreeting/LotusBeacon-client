@@ -17,7 +17,7 @@ class PeepingPhysicalHandshake extends ConsumerWidget {
           padding: const EdgeInsets.all(16.0),
           child: rpidAsync.when(
             data: (rpid) => Text('My RPID: $rpid'),
-            loading: () => const Text('Generating RPID...'),
+            loading: () => const SizedBox.shrink(),
             error: (error, stack) => Text('Error: $error'),
           ),
         ),
@@ -52,9 +52,35 @@ class PeepingPhysicalHandshake extends ConsumerWidget {
             loading: () => const Center(
               child: CircularProgressIndicator.adaptive(),
             ),
-            error: (error, stack) => Center(
-              child: Text('Error: $error'),
-            ),
+            error: (error, stack) {
+              if (error is RegistrationRequiredException) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.app_registration,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Registration Required',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Please register to the event first\nto start scanning for nearby devices.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return Center(
+                child: Text('Error: $error'),
+              );
+            },
           ),
         ),
       ],
