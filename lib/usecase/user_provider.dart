@@ -22,7 +22,7 @@ final currentUserProvider = StreamProvider<User?>((ref) {
 });
 
 final userProvider = StreamProvider.family<
-    User,
+    User?,
     ({
       String eventId,
       String userId,
