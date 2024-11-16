@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:math';
+import 'dart:math' show Random, secure;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,21 +15,24 @@ final rpidSeedProvider = Provider<String>((ref) {
 /// 20秒ごとに更新されるRolling Proximity Identifier (RPID)を生成するプロバイダー
 final rpidProvider = StreamProvider<int>((ref) {
   final seed = ref.watch(rpidSeedProvider);
+  final usedRpids = <int>{};  // Track used RPIDs with a Set
 
   return Stream.periodic(const Duration(seconds: 5), (count) {
-    // 現在の時間を20秒間隔で切り捨てて、タイムウィンドウの開始時刻を取得
     final timeWindow = DateTime.now().millisecondsSinceEpoch ~/ 20000;
-    logger.info('RPID count: $count, timeWindow: $timeWindow                 ');
+    logger.info('RPID count: $count, timeWindow: $timeWindow');
 
-    // シード値とタイムウィンドウを組み合わせてRPIDを生成
-    final input = utf8.encode('$seed:$timeWindow:$count');
-    final hash = base64Url.encode(input);
+    int rpid;
+    do {
+      // Modified RPID generation logic for more diverse values
+      final input = utf8.encode('$seed:$timeWindow:$count:${Random().nextInt(10000)}');
+      final hash = base64Url.encode(input);
+      final rpidBytes = utf8.encode(hash).sublist(0, 2);
+      rpid = (rpidBytes[0] << 8) + rpidBytes[1];
+    } while (usedRpids.contains(rpid)); // Regenerate if RPID was already used
 
-    // 最初の2バイトを使用してRPIDとする
-    final rpidBytes = utf8.encode(hash).sublist(0, 2);
-    final rpid = (rpidBytes[0] << 8) + rpidBytes[1];
+    usedRpids.add(rpid);
     logger.fine('Generated RPID: $rpid');
 
     return rpid;
-  }).distinct(); // 同じ値は発行しない
+  }).distinct();
 });
