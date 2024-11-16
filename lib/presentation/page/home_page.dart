@@ -10,10 +10,13 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _startBleServices();
   }
 
@@ -24,6 +27,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   void dispose() {
+    _tabController.dispose();
     final service = ref.read(bleServiceProvider);
     service.dispose();
     super.dispose();
@@ -40,8 +44,21 @@ class _HomePageState extends ConsumerState<HomePage> {
             Navigator.of(context).pushNamed('/debug');
           },
         ),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Participants'),
+            Tab(text: 'Settings'),
+          ],
+        ),
       ),
-      body: Container(),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          Container(), // Placeholder for Participants content
+          Container(), // Placeholder for Settings content
+        ],
+      ),
     );
   }
 }
