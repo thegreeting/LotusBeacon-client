@@ -7,7 +7,6 @@ enum EstimatedDistance {
 
 class PhysicalProximity {
   final String beaconId;
-  final String rpid;
   final EstimatedDistance distance;
   final double estimatedDistance;
   final int rssi;
@@ -15,10 +14,26 @@ class PhysicalProximity {
 
   PhysicalProximity({
     required this.beaconId,
-    required this.rpid,
     required this.distance,
     required this.estimatedDistance,
     required this.rssi,
     required this.lastDetectedAt,
+  });
+}
+
+class LotusBeaconPhysicalHandshake extends PhysicalProximity {
+  final String eventId;
+  final String userIndex;
+  final String rpid;
+
+  LotusBeaconPhysicalHandshake({
+    required this.eventId,
+    required this.userIndex,
+    required this.rpid,
+    required super.beaconId,
+    required super.distance,
+    required super.estimatedDistance,
+    required super.rssi,
+    required super.lastDetectedAt,
   });
 }
