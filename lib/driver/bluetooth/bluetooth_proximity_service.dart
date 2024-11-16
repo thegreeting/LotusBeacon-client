@@ -49,7 +49,9 @@ class BleProximityService {
 
   Future<void> startAdvertising(String rpid) async {
     final advertisementName = '🪷 0 1 $rpid';
-    await _peripheralManager.removeAllServices();
+    logger.info('Stop advertising');
+    await _peripheralManager.stopAdvertising();
+    await Future.delayed(const Duration(seconds: 1));
 
     await _peripheralManager.startAdvertising(
       Advertisement(
@@ -67,9 +69,10 @@ class BleProximityService {
   }
 
   Future<void> startCycle(String rpid) async {
+    logger.info('BLE start cycle with RPID: $rpid');
     _currentRpid = rpid;
     _cycleTimer?.cancel();
-    _cycleTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+    _cycleTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
       if (_isAdvertising) {
         await stopAdvertising();
         await startScanning();

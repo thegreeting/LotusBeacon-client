@@ -66,6 +66,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text('EventID: ${proximity.eventId}'),
+                          Text('UserIndex: ${proximity.userIndex}'),
                           Text('Distance: ${proximity.distance}'),
                           Text('RSSI: ${proximity.rssi}'),
                           Text('Last detected: ${proximity.lastDetectedAt}'),
