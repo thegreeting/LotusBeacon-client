@@ -19,11 +19,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _startBleServices() async {
-    final service = ref.read(bleServiceProvider);
-    final rpidAsync = ref.watch(rollingRpidProvider);
-    rpidAsync.whenData((rpid) async {
-      await service.startCycle(rpid);
-    });
+    // ファサードプロバイダを読み込むだけでよい
+    ref.read(bleServiceFacadeProvider);
   }
 
   @override
