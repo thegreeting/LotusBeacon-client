@@ -16,9 +16,6 @@ class SettingPage extends ConsumerWidget {
     final hasSoftParticipatedOnEvent = ref.watch(hasSoftParticipatedOnEventProvider(event.id));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
