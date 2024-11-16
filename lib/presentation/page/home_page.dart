@@ -21,15 +21,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     final service = ref.read(bleServiceProvider);
     final rpid = ref.read(rpidProvider);
 
-    await service.startAdvertising(rpid);
-    await service.startScanning();
+    await service.startCycle(rpid);
   }
 
   @override
   void dispose() {
     final service = ref.read(bleServiceProvider);
-    service.stopAdvertising();
-    service.stopScanning();
     service.dispose();
     super.dispose();
   }

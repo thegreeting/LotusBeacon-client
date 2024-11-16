@@ -11,11 +11,19 @@ import '../../../application/config/logger.dart';
 import '../../domain/physical_proximity.dart';
 
 class BleProximityService {
-  static UUID serviceUuid = UUID.fromString('4fafc201-1fb5-459e-8fcc-c5c9c331914b');
+  static UUID serviceUuid = UUID.fromString('9999');
 
   final CentralManager _centralManager;
   final PeripheralManager _peripheralManager;
   final StreamController<PhysicalProximity> _proximityController = StreamController<PhysicalProximity>.broadcast();
+
+  final Map<String, PhysicalProximity> _proximityData = {};
+  Timer? _cycleTimer;
+  bool _isAdvertising = false;
+  String? _currentRpid;
+
+  Stream<List<PhysicalProximity>> get proximityDataStream =>
+      _proximityController.stream.map((_) => _proximityData.values.toList());
 
   Stream<PhysicalProximity> get proximityStream => _proximityController.stream;
 
@@ -79,9 +87,32 @@ class BleProximityService {
   }
 
   Future<void> startScanning() async {
+    logger.info('Start scanning');
     await _centralManager.startDiscovery(
       serviceUUIDs: [serviceUuid],
     );
+  }
+
+  Future<void> startCycle(String rpid) async {
+    _currentRpid = rpid;
+    _cycleTimer?.cancel();
+    _cycleTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+      if (_isAdvertising) {
+        await stopAdvertising();
+        await startScanning();
+        _isAdvertising = false;
+      } else {
+        await stopScanning();
+        if (_currentRpid != null) {
+          await startAdvertising(_currentRpid!);
+        }
+        _isAdvertising = true;
+      }
+    });
+
+    // 初回は広告から開始
+    await startAdvertising(rpid);
+    _isAdvertising = true;
   }
 
   void _onDiscovered(DiscoveredEventArgs args) {
@@ -120,6 +151,8 @@ class BleProximityService {
             lastDetectedAt: DateTime.now(),
           );
 
+          // データを累積保持
+          _proximityData[rpid] = proximity;
           _proximityController.add(proximity);
         }
       } catch (e) {
@@ -143,6 +176,7 @@ class BleProximityService {
   }
 
   void dispose() {
+    _cycleTimer?.cancel();
     _discoveredSubscription.cancel();
     _stateChangedSubscription.cancel();
     _proximityController.close();
