@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lotusbeacon/presentation/page/debug_page.dart';
 import 'package:lotusbeacon/presentation/page/home_page.dart';
 
 class MyApp extends ConsumerWidget {
@@ -27,6 +28,7 @@ class MyApp extends ConsumerWidget {
       themeMode: themeMode,
       routes: {
         '/home': (context) => const HomePage(),
+        '/debug': (context) => const DebugPage(),
       },
       initialRoute: '/home',
     );

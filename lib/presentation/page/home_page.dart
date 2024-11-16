@@ -38,6 +38,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('BLE Proximity'),
+        leading: IconButton(
+          icon: const Icon(Icons.bug_report),
+          onPressed: () {
+            Navigator.of(context).pushNamed('/debug');
+          },
+        ),
       ),
       body: Column(
         children: [
