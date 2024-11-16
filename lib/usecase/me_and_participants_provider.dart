@@ -48,11 +48,10 @@ final meAndParticipantOnEventProvider =
   return getParticipant(ref, params.eventId, params.participantUserId);
 });
 
-Stream<List<Participant>> getParticipantsByGreetingStatus(Ref ref, String eventId, GreetingStatus status) async* {
+List<Participant> getParticipantsByGreetingStatus(Ref ref, String eventId, GreetingStatus status) {
   final currentUserId = ref.watch(currentUserIdProvider);
   if (currentUserId == null) {
-    yield [];
-    return;
+    return [];
   }
   final participantUserIds = ref.watch(participantUserIdsOnEventProvider(eventId)).asData?.value ?? [];
 
@@ -73,27 +72,34 @@ Stream<List<Participant>> getParticipantsByGreetingStatus(Ref ref, String eventI
     }
   }
 
-  yield participants;
+  return participants;
 }
 
-final mutualGreetingParticipantOnEventProvider = StreamProvider.family<List<Participant>, String>((ref, eventId) {
-  return getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.mutual);
+final mutualGreetingParticipantsOnEventProvider = StreamProvider.family<List<Participant>, String>((ref, eventId) {
+  return Stream.value(getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.mutual));
 });
 
-final sentGreetingParticipantUserIdOnEventProvider = StreamProvider.family<List<Participant>, String>((ref, eventId) {
-  return getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.sent);
+final sentGreetingParticipantsOnEventProvider = StreamProvider.family<List<Participant>, String>((ref, eventId) {
+  return Stream.value(getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.sent));
 });
 
-final receivedGreetingParticipantUserIdOnEventProvider =
+final receivedGreetingParticipantsOnEventProvider = StreamProvider.family<List<Participant>, String>((ref, eventId) {
+  return Stream.value(getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.received));
+});
+
+final noneGreetingButNearByParticipantsOnEventProvider =
     StreamProvider.family<List<Participant>, String>((ref, eventId) {
-  return getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.received);
+  final noneGreetingParticipants = getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.none).toList();
+  // TODO(knaoe): retrieve from BLE
+  final nearByUserId = [];
+  // filter by nearByUserId
+  return Stream.value(noneGreetingParticipants.where((e) => nearByUserId.contains(e.user.userId)).toList());
 });
 
-final noneGreetingButNearByParticipantUserIdOnEventProvider =
-    StreamProvider.family<List<Participant>, String>((ref, eventId) {
-  return getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.noneNearby);
-});
-
-final noneGreetingParticipantUserIdOnEventProvider = StreamProvider.family<List<Participant>, String>((ref, eventId) {
-  return getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.none);
+final noneGreetingParticipantsOnEventProvider = StreamProvider.family<List<Participant>, String>((ref, eventId) {
+  final noneGreetingParticipants = getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.none);
+  // TODO(knaoe): retrieve from BLE
+  final nearByUserId = [];
+  // filter by nearByUserId
+  return Stream.value(noneGreetingParticipants.where((e) => !nearByUserId.contains(e.user.userId)).toList());
 });
