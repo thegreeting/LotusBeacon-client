@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lotusbeacon/usecase/event_provider.dart';
+import 'package:lotusbeacon/usecase/user_provider.dart';
 
 import '../domain/physical_proximity.dart';
 import '../driver/bluetooth/bluetooth_proximity_service.dart';
@@ -14,11 +15,15 @@ final bleServiceProvider = Provider((ref) {
 // BLEサービスとRPIDを連携させるファサードプロバイダ
 final bleServiceFacadeProvider = Provider((ref) {
   final service = ref.watch(bleServiceProvider);
+  final eventUserIndex = ref.watch(currenEventUserIndexProvider);
+  if (eventUserIndex == null) {
+    throw Exception('Registration is required to start sensing.');
+  }
 
   // RPIDの変更を監視してBLEサイクルを更新
   ref.listen(rpidProvider, (previous, next) {
     next.whenData((rpid) async {
-      await service.startCycle(rpid);
+      await service.startCycle(eventUserIndex, rpid);
     });
   });
 

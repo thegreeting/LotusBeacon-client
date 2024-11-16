@@ -21,6 +21,10 @@ final currentUserProvider = StreamProvider<User?>((ref) {
   return Stream.value(UserFixture.dummy(userId));
 });
 
+final currenEventUserIndexProvider = StateProvider<int?>((ref) {
+  return null;
+});
+
 final userProvider = StreamProvider.family<
     User?,
     ({

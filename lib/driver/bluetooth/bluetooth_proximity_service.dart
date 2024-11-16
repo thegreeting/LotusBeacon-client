@@ -68,11 +68,11 @@ class BleProximityService {
     }
   }
 
-  Future<void> startAdvertising(int rpid) async {
+  Future<void> startAdvertising(int eventUserIndex, int rpid) async {
     await _beaconBroadcast
         .setUUID(serviceUuid.toString())
-        .setMajorId(0) // eventUserIndex用
-        .setMinorId(196) // RPID用
+        .setMajorId(eventUserIndex) // eventUserIndex用
+        .setMinorId(rpid) // RPID用
         .setIdentifier('') // not needed but just required
         .setTransmissionPower(txPower)
         .start();
@@ -87,7 +87,7 @@ class BleProximityService {
     );
   }
 
-  Future<void> startCycle(int rpid) async {
+  Future<void> startCycle(int eventUserIndex, int rpid) async {
     logger.info('BLE start cycle with RPID: $rpid');
     _currentRpid = rpid;
     _cycleTimer?.cancel();
@@ -99,14 +99,15 @@ class BleProximityService {
       } else {
         await stopScanning();
         if (_currentRpid != null) {
-          await startAdvertising(_currentRpid!);
+          await startAdvertising(eventUserIndex, _currentRpid!);
         }
         _isAdvertising = true;
       }
     });
 
     // 初回は広告から開始
-    await startAdvertising(rpid);
+    await startAdvertising(eventUserIndex, rpid);
+    await startScanning();
     _isAdvertising = true;
   }
 
