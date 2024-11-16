@@ -6,8 +6,7 @@ import 'package:lotusbeacon/usecase/greetings_provider.dart';
 import 'package:lotusbeacon/usecase/participants_provider.dart';
 import 'package:lotusbeacon/usecase/user_provider.dart';
 
-final meAndParticipantOnEventProvider =
-    Provider.family<Participant?, ({String eventId, String participantUserId})>((ref, params) {
+Participant? getParticipant(Ref ref, String eventId, String participantUserId) {
   final currentUserId = ref.watch(currentUserIdProvider);
   if (currentUserId == null) {
     return null;
@@ -15,7 +14,7 @@ final meAndParticipantOnEventProvider =
 
   final user = ref
       .watch(userProvider((
-        eventId: 'eventId',
+        eventId: eventId,
         userId: currentUserId,
       )))
       .asData
@@ -27,9 +26,9 @@ final meAndParticipantOnEventProvider =
   final greetingStatus = ref
       .watch(greetingStatusProvider(
         (
-          eventId: params.eventId,
+          eventId: eventId,
           user1Id: currentUserId,
-          user2Id: params.participantUserId,
+          user2Id: participantUserId,
         ),
       ))
       .asData
@@ -42,12 +41,18 @@ final meAndParticipantOnEventProvider =
     user: user,
     greetingStatus: greetingStatus,
   );
+}
+
+final meAndParticipantOnEventProvider =
+    Provider.family<Participant?, ({String eventId, String participantUserId})>((ref, params) {
+  return getParticipant(ref, params.eventId, params.participantUserId);
 });
 
-final mutualGreetingParticipantOnEventProvider = StreamProvider.family<List<Participant>, String>((ref, eventId) {
+Stream<List<Participant>> getParticipantsByGreetingStatus(Ref ref, String eventId, GreetingStatus status) async* {
   final currentUserId = ref.watch(currentUserIdProvider);
   if (currentUserId == null) {
-    return const Stream.empty();
+    yield [];
+    return;
   }
   final participantUserIds = ref.watch(participantUserIdsOnEventProvider(eventId)).asData?.value ?? [];
 
@@ -63,52 +68,32 @@ final mutualGreetingParticipantOnEventProvider = StreamProvider.family<List<Part
     if (participant == null) {
       throw Exception('Participant not found');
     }
-    if (participant.greetingStatus == GreetingStatus.mutual) {
+    if (participant.greetingStatus == status) {
       participants.add(participant);
     }
   }
 
-  return Stream.value(participants);
+  yield participants;
+}
+
+final mutualGreetingParticipantOnEventProvider = StreamProvider.family<List<Participant>, String>((ref, eventId) {
+  return getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.mutual);
 });
 
 final sentGreetingParticipantUserIdOnEventProvider = StreamProvider.family<List<Participant>, String>((ref, eventId) {
-  final currentUserId = ref.watch(currentUserIdProvider);
-  if (currentUserId == null) {
-    return const Stream.empty();
-  }
-  final participantUserIds = ref.watch(participantUserIdsOnEventProvider(eventId));
-  // TODO(knaoe): To be impl.
-  return const Stream.empty();
+  return getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.sent);
 });
 
 final receivedGreetingParticipantUserIdOnEventProvider =
     StreamProvider.family<List<Participant>, String>((ref, eventId) {
-  final currentUserId = ref.watch(currentUserIdProvider);
-  if (currentUserId == null) {
-    return const Stream.empty();
-  }
-  final participantUserIds = ref.watch(participantUserIdsOnEventProvider(eventId));
-  // TODO(knaoe): To be impl.
-  return const Stream.empty();
+  return getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.received);
 });
 
 final noneGreetingButNearByParticipantUserIdOnEventProvider =
     StreamProvider.family<List<Participant>, String>((ref, eventId) {
-  final currentUserId = ref.watch(currentUserIdProvider);
-  if (currentUserId == null) {
-    return const Stream.empty();
-  }
-  final participantUserIds = ref.watch(participantUserIdsOnEventProvider(eventId));
-  // TODO(knaoe): To be impl.
-  return const Stream.empty();
+  return getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.noneNearby);
 });
 
 final noneGreetingParticipantUserIdOnEventProvider = StreamProvider.family<List<Participant>, String>((ref, eventId) {
-  final currentUserId = ref.watch(currentUserIdProvider);
-  if (currentUserId == null) {
-    return const Stream.empty();
-  }
-  final participantUserIds = ref.watch(participantUserIdsOnEventProvider(eventId));
-  // TODO(knaoe): To be impl.
-  return const Stream.empty();
+  return getParticipantsByGreetingStatus(ref, eventId, GreetingStatus.none);
 });
