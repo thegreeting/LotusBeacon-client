@@ -16,10 +16,10 @@ final rpidSeedProvider = Provider<String>((ref) {
 final rpidProvider = StreamProvider<int>((ref) {
   final seed = ref.watch(rpidSeedProvider);
 
-  return Stream.periodic(const Duration(seconds: 20), (count) {
-    logger.info('RPID count: $count');
+  return Stream.periodic(const Duration(seconds: 5), (count) {
     // 現在の時間を20秒間隔で切り捨てて、タイムウィンドウの開始時刻を取得
     final timeWindow = DateTime.now().millisecondsSinceEpoch ~/ 20000;
+    logger.info('RPID count: $count, timeWindow: $timeWindow                 ');
 
     // シード値とタイムウィンドウを組み合わせてRPIDを生成
     final input = utf8.encode('$seed:$timeWindow:$count');
@@ -28,6 +28,7 @@ final rpidProvider = StreamProvider<int>((ref) {
     // 最初の2バイトを使用してRPIDとする
     final rpidBytes = utf8.encode(hash).sublist(0, 2);
     final rpid = (rpidBytes[0] << 8) + rpidBytes[1];
+    logger.fine('Generated RPID: $rpid');
 
     return rpid;
   }).distinct(); // 同じ値は発行しない
