@@ -48,21 +48,15 @@ class BleProximityService {
   }
 
   Future<void> startAdvertising(String rpid) async {
+    final advertisementName = '🪷 0 1 $rpid';
     await _peripheralManager.removeAllServices();
 
     await _peripheralManager.startAdvertising(
       Advertisement(
-        name: Platform.isWindows ? null : '🪷 0 1 ${rpid.substring(0, 4)}',
-        // manufacturerSpecificData: [
-        //   if (Platform.isWindows || Platform.isAndroid)
-        //     ManufacturerSpecificData(
-        //       id: 0xFFFF, // 任意のメーカーID
-        //       data: data,
-        //     ),
-        // ],
+        name: Platform.isWindows ? null : advertisementName,
       ),
     );
-    logger.info('Started advertising with RPID: $rpid');
+    logger.info('Started advertising with name: $advertisementName');
   }
 
   Future<void> startScanning() async {
