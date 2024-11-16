@@ -37,7 +37,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AppAuthState>> {
     });
   }
 
-  Future<void> signIn() async {
+  Future<void> signInIfNeeded() async {
     final currentState = await _ref.read(authStateProvider.future);
     if (currentState.status == AppAuthStatus.unauthenticated) {
       // try {
