@@ -37,7 +37,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BLE Proximity'),
+        title: const Text('Your "Trustless" Interactions at ETHGlobal'),
         leading: IconButton(
           icon: const Icon(Icons.bug_report),
           onPressed: () {
