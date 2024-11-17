@@ -113,57 +113,65 @@ class BleProximityService {
   }
 
   void _onDiscovered(DiscoveredEventArgs args) {
-    // logger.info(args.advertisement.serviceUUIDs.toString());
-    // if (args.advertisement.serviceUUIDs.toList().contains(serviceUuid.toString())) {
-    //   return;
-    // }
     if (args.advertisement.manufacturerSpecificData.isEmpty) {
       return;
     }
+    
     final manufacturerData = args.advertisement.manufacturerSpecificData[0].data;
-    // logger.info('ManifacturerData: $manufacturerData');
-    // Parse iBeacon manufacturer data
-    logger.info(
-        'ManufacturerData length: ${manufacturerData.length}: [0] ${manufacturerData[0]}, [1] ${manufacturerData[1]}');
-    if (manufacturerData.length >= 23) {
-      try {
-        // Adjust offset if company identifier code is present
-        int offset = 0;
-        if (manufacturerData.length > 23) {
-          offset = manufacturerData.length - 23;
-        }
+    
+    // iBeaconパケットの基本検証
+    // 1. 長さが最低26バイト (1A + FF + 4C00 + 02 + 15 + UUID(16) + Major(2) + Minor(2) + Power(1))
+    if (manufacturerData.length < 26) {
+      return;
+    }
+    
+    // 2. Apple社の企業識別子 (0x004C) の確認
+    if (manufacturerData[0] != 0x4C || manufacturerData[1] != 0x00) {
+      return;
+    }
+    
+    // 3. iBeacon識別子の確認 (0x02, 0x15)
+    if (manufacturerData[2] != 0x02 || manufacturerData[3] != 0x15) {
+      return;
+    }
 
-        final uuid = _extractUuid(manufacturerData.sublist(2 + offset, 18 + offset));
-        final major = (manufacturerData[18 + offset] << 8) + manufacturerData[19 + offset];
-        final minor = (manufacturerData[20 + offset] << 8) + manufacturerData[21 + offset];
-        logger.info('ManufacturerData: UUID: $uuid, Major: $major, Minor: $minor');
-        final txPower = manufacturerData[22 + offset].toSigned(8);
+    try {
+      // UUID: 4バイト目から16バイト分
+      final uuid = _extractUuid(manufacturerData.sublist(4, 20));
+      
+      // Major: 20-21バイト目
+      final major = (manufacturerData[20] << 8) + manufacturerData[21];
+      
+      // Minor: 22-23バイト目
+      final minor = (manufacturerData[22] << 8) + manufacturerData[23];
+      
+      // Power: 24バイト目
+      final txPower = manufacturerData[24].toSigned(8);
 
-        final estimatedDistance = _estimateDistance(args.rssi, txPower);
-        final distance = estimatedDistance < 0.5
-            ? EstimatedDistance.immediate
-            : estimatedDistance < 3.0
-                ? EstimatedDistance.near
-                : EstimatedDistance.far;
+      final estimatedDistance = _estimateDistance(args.rssi, txPower);
+      final distance = estimatedDistance < 0.5
+          ? EstimatedDistance.immediate
+          : estimatedDistance < 3.0
+              ? EstimatedDistance.near
+              : EstimatedDistance.far;
 
-        final proximity = LotusBeaconPhysicalHandshake(
-          beaconId: args.peripheral.uuid.value.toString(),
-          rpid: major.toString(),
-          distance: distance,
-          estimatedDistance: estimatedDistance,
-          rssi: args.rssi,
-          txPower: txPower,
-          lastDetectedAt: DateTime.now(),
-          eventId: serviceUuid.toString(),
-          userIndex: major.toString(),
-        );
+      final proximity = LotusBeaconPhysicalHandshake(
+        beaconId: args.peripheral.uuid.value.toString(),
+        rpid: major.toString(),
+        distance: distance,
+        estimatedDistance: estimatedDistance,
+        rssi: args.rssi,
+        txPower: txPower,
+        lastDetectedAt: DateTime.now(),
+        eventId: serviceUuid.toString(),
+        userIndex: major.toString(),
+      );
 
-        _proximityData[uuid] = proximity;
-        _proximityController.add(proximity);
-        logger.info('Discovered $proximity');
-      } catch (e) {
-        logger.severe('Error parsing iBeacon data: $e');
-      }
+      _proximityData[uuid] = proximity;
+      _proximityController.add(proximity);
+      logger.info('Discovered $proximity');
+    } catch (e) {
+      logger.severe('Error parsing iBeacon data: $e');
     }
   }
 
