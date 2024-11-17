@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lotusbeacon/presentation/organism/peeping_physical_handshake.dart';
 import 'package:lotusbeacon/presentation/page/setting_page.dart';
+import 'package:lotusbeacon/usecase/event_provider.dart';
 import 'package:lotusbeacon/usecase/rpid_provider.dart';
 
 import '../../usecase/bluetooth_provider.dart';
@@ -51,9 +52,19 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final event = ref.watch(selectedEventProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your "Trustless" Interactions at ETHGlobal'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text('Your "Trustless" Interactions'),
+            Text(
+              '${event.name} ${event.description}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
         leading: IconButton(
           icon: const Icon(Icons.bug_report),
           onPressed: () {
