@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lotusbeacon/usecase/user_provider.dart';
 
 import '../application/config/logger.dart';
 import '../domain/auth_state.dart';
@@ -11,7 +12,8 @@ final authStateProvider = FutureProvider<AppAuthState>((ref) async {
   //     return AppAuthState.authenticated(e.address);
   //   }
   // });
-  return AppAuthState.authenticated('0xken');
+  final currentUser = ref.watch(currentUserProvider).asData!.value!;
+  return AppAuthState.authenticated(currentUser.userId);
 });
 
 final currentUserIdProvider = Provider<String?>((ref) {

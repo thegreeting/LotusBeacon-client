@@ -1,28 +1,37 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lotusbeacon/application/fixture/user_fixture.dart';
-import 'package:lotusbeacon/domain/auth_state.dart';
 import 'package:lotusbeacon/domain/user.dart';
-import 'package:lotusbeacon/usecase/auth_provider.dart';
 
 final currentUserProvider = StreamProvider<User?>((ref) {
-  final authState = ref.watch(authStateProvider);
+  // final authState = ref.watch(authStateProvider);
 
-  if (authState.asData?.value == null) {
-    return const Stream.empty();
+  // if (authState.asData?.value == null) {
+  //   return const Stream.empty();
+  // }
+
+  // if (authState.asData!.value.status == AppAuthStatus.unauthenticated) {
+  //   return const Stream.empty();
+  // }
+
+  // final userId = authState.asData!.value.userId!;
+
+  // // TODO(knaoe): watch remote profile
+  // return Stream.value(UserFixture.dummy(userId));
+  final random = Random();
+  final isIpad = random.nextBool();
+
+  if (isIpad) {
+    return Stream.value(UserFixture.ipadmini());
+  } else {
+    return Stream.value(UserFixture.iphone16pro());
   }
-
-  if (authState.asData!.value.status == AppAuthStatus.unauthenticated) {
-    return const Stream.empty();
-  }
-
-  final userId = authState.asData!.value.userId!;
-
-  // TODO(knaoe): watch remote profile
-  return Stream.value(UserFixture.dummy(userId));
 });
 
-final currenEventUserIndexProvider = StateProvider<int?>((ref) {
-  return null;
+final currenEventUserIndexProvider = Provider<int?>((ref) {
+  final user = ref.watch(currentUserProvider).asData?.value;
+  return user?.eventUserIndex;
 });
 
 final userProvider = StreamProvider.family<

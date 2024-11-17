@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lotusbeacon/usecase/auth_provider.dart';
 import 'package:lotusbeacon/usecase/event_provider.dart';
+import 'package:lotusbeacon/usecase/user_provider.dart';
 
 class DebugPage extends ConsumerWidget {
   const DebugPage({super.key});
@@ -8,6 +10,7 @@ class DebugPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedEvent = ref.watch(selectedEventProvider);
+    final currentUserId = ref.watch(currentUserIdProvider);
     final overrideEventIdController = TextEditingController(text: selectedEvent.id);
 
     return Scaffold(
@@ -38,7 +41,26 @@ class DebugPage extends ConsumerWidget {
               },
               child: const Text('Set Override Event Id'),
             ),
-            const Text('Changing eventId will get fresh tenant. Useful for testing.')
+            const Text('Changing eventId will get fresh tenant. Useful for testing.'),
+            const SizedBox(height: 32),
+            Text('Current User Id: $currentUserId'),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () {
+                final container = ProviderScope.containerOf(context);
+                container.invalidate(selectedEventProvider);
+                container.invalidate(currentUserProvider);
+                // Show a snackbar to indicate reset
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('All states have been reset')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Reset All States'),
+            ),
           ],
         ),
       ),

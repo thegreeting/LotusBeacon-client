@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lotusbeacon/driver/firebase/firestore_provider.dart';
-import 'package:lotusbeacon/usecase/auth_provider.dart';
+import 'package:lotusbeacon/usecase/user_provider.dart';
 
 final participantUserIdsOnEventProvider = StreamProvider.family<List<String>, String>((
   ref,
@@ -18,15 +18,17 @@ final hasSoftParticipatedOnEventProvider = Provider.family<bool, String>((
   ref,
   eventId,
 ) {
-  final userId = ref.watch(currentUserIdProvider);
-  if (userId == null) {
+  final user = ref.watch(currentUserProvider).asData?.value;
+  if (user == null) {
     return false;
   }
+  return user.eventUserIndex != null ? true : false;
   // TODO(knaoe): To be impl. fetch from remote web2 storage.
-  return false;
+  // return false;
 });
 
-Future<bool> hasSoftRegisteredOnEvent({
+Future<bool> hasSoftRegisteredOnEvent(
+  WidgetRef ref, {
   required String eventId,
   required String userId,
 }) async {
