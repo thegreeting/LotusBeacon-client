@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lotusbeacon/driver/firebase/firestore_provider.dart';
 import 'package:lotusbeacon/usecase/auth_provider.dart';
 
 final participantUserIdsOnEventProvider = StreamProvider.family<List<String>, String>((
@@ -24,15 +26,17 @@ final hasSoftParticipatedOnEventProvider = Provider.family<bool, String>((
   return false;
 });
 
-Future<void> hasSoftRegisteredOnEvent({
+Future<bool> hasSoftRegisteredOnEvent({
   required String eventId,
   required String userId,
 }) async {
-  // TODO(knaoe): fetch from remote web2 storage.
-  return;
+  final firestore = FirebaseFirestore.instance;
+  final docSnapshot = await firestore.collection('events').doc(eventId).collection('participants').doc(userId).get();
+  return docSnapshot.exists;
 }
 
-Future<void> participateUserOnEventOrHardRegisterIfNeeded({
+Future<void> participateUserOnEventOrHardRegisterIfNeeded(
+  WidgetRef ref, {
   required String eventId,
   required String userId,
 }) async {
@@ -40,7 +44,13 @@ Future<void> participateUserOnEventOrHardRegisterIfNeeded({
 
   // TODO(knaoe): call to Contract to register user on event to issue eventUserIndex if not registered
 
+  final firestore = await ref.read(firestoreProvider.future);
+  final batch = firestore.batch();
   // TODO(knaoe): update web2 storage. profile
 
   // TODO(knaoe): update web2 storage. event.participants
+  batch.set(firestore.collection('events').doc(eventId).collection('participants').doc(userId), {
+    'create_time': FieldValue.serverTimestamp(),
+  });
+  await batch.commit();
 }

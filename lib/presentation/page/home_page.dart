@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lotusbeacon/presentation/organism/peeping_physical_handshake.dart';
 import 'package:lotusbeacon/presentation/page/setting_page.dart';
+import 'package:lotusbeacon/usecase/rpid_provider.dart';
 
 import '../../usecase/bluetooth_provider.dart';
 
@@ -18,17 +19,30 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _startBleServices();
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 1);
+    _tabController.addListener(_handleTabChange);
+  }
+
+  void _handleTabChange() {
+    if (_tabController.index == 0) {
+      _startBleServices();
+    } else {
+      _stopBleServices();
+    }
   }
 
   Future<void> _startBleServices() async {
-    // just load the facade to start sensor services
     ref.read(bleServiceFacadeProvider);
+  }
+
+  void _stopBleServices() {
+    ref.invalidate(bleServiceFacadeProvider);
+    ref.invalidate(rpidProvider);
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     final service = ref.read(bleServiceProvider);
     service.dispose();

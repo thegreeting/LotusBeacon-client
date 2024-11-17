@@ -82,6 +82,7 @@ class SettingPage extends ConsumerWidget {
                               ? null
                               : () async {
                                   await participateUserOnEventOrHardRegisterIfNeeded(
+                                    ref,
                                     eventId: event.id,
                                     userId: userId,
                                   );
