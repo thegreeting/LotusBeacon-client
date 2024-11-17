@@ -28,6 +28,13 @@
             "internalConsoleOptions": "openOnSessionStart",
             "deviceId": "00008110-000865D83C62801E"
         },
+        {
+            "name": "ken-pixel8a",
+            "request": "launch",
+            "type": "dart",
+            "internalConsoleOptions": "openOnSessionStart",
+            "deviceId": "46111JEKB11173"
+        },
     ],
     "compounds": [
         {

@@ -31,6 +31,10 @@ final bleServiceFacadeProvider = Provider((ref) {
     });
   });
 
+  ref.onDispose(() {
+    service.dispose();
+  });
+
   return service;
 });
 

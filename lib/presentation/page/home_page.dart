@@ -30,7 +30,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
   }
 
   void _handleTabChange() {
-    if (_tabController.index == 0) {
+    if (_tabController.index != 2) {
       _startBleServices();
     } else {
       _stopBleServices();
@@ -44,6 +44,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
   void _stopBleServices() {
     ref.invalidate(bleServiceFacadeProvider);
     ref.invalidate(rpidProvider);
+    ref.invalidate(proximityStreamProvider);
   }
 
   @override

@@ -83,7 +83,7 @@ class BleProximityService {
 
   Future<void> startScanning() async {
     logger.info('Start scanning');
-    await _centralManager.startDiscovery();
+    await _centralManager.startDiscovery(serviceUUIDs: [serviceUuid]);
   }
 
   Future<void> startCycle(int eventUserIndex, int rpid) async {
@@ -117,11 +117,18 @@ class BleProximityService {
     if (args.advertisement.manufacturerSpecificData.isEmpty) {
       return;
     }
+    if (args.rssi < 100) {
+      return;
+    }
 
-    final manufacturerData = args.advertisement.manufacturerSpecificData[0].data;
+    final manufacturerData = args.advertisement.manufacturerSpecificData[0].data.sublist(0);
+    final serviceDatas = args.advertisement.serviceData;
 
     // Debug log raw data
-    logger.fine('Raw manufacturer data (${manufacturerData.length} bytes): ${manufacturerData.map((e) => e.toRadixString(16).padLeft(2, '0')).join(' ')}');
+    logger.fine('Discovered: (${args.peripheral.uuid}) serviceData: $serviceDatas');
+    logger.fine(
+      'Discovered: Raw manufacturer data (${manufacturerData.length} bytes): ${manufacturerData.map((e) => e.toRadixString(16).padLeft(2, '0')).join(' ')}',
+    );
 
     // iBeaconパケットの検証
     // 標準的なiBeaconパケットは26または27バイト
@@ -133,13 +140,15 @@ class BleProximityService {
 
     // Apple社の企業識別子 (0x004C)
     if (manufacturerData[0] != 0x4C || manufacturerData[1] != 0x00) {
-      logger.fine('Invalid manufacturer ID: ${manufacturerData[0].toRadixString(16)}${manufacturerData[1].toRadixString(16)} (expected 4C00)');
+      logger.fine(
+          'Invalid manufacturer ID: ${manufacturerData[0].toRadixString(16)}${manufacturerData[1].toRadixString(16)} (expected 4C00)');
       return;
     }
 
     // iBeacon識別子 (0x02, 0x15)
     if (manufacturerData[2] != 0x02 || manufacturerData[3] != 0x15) {
-      logger.fine('Invalid iBeacon identifier: ${manufacturerData[2].toRadixString(16)}${manufacturerData[3].toRadixString(16)} (expected 0215)');
+      logger.fine(
+          'Invalid iBeacon identifier: ${manufacturerData[2].toRadixString(16)}${manufacturerData[3].toRadixString(16)} (expected 0215)');
       return;
     }
 
