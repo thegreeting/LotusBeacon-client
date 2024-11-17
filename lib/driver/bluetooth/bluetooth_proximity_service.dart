@@ -40,6 +40,7 @@ class BleProximityService {
   }
 
   Future<void> _initBeacon() async {
+    logger.info('ServiceUUID: $serviceUuid');
     final status = await _beaconBroadcast.checkTransmissionSupported();
     switch (status) {
       case BeaconStatus.supported:
@@ -83,8 +84,8 @@ class BleProximityService {
   Future<void> startScanning() async {
     logger.info('Start scanning');
     await _centralManager.startDiscovery(
-      serviceUUIDs: [serviceUuid],
-    );
+        // serviceUUIDs: [serviceUuid],
+        );
   }
 
   Future<void> startCycle(int eventUserIndex, int rpid) async {
@@ -112,16 +113,24 @@ class BleProximityService {
   }
 
   void _onDiscovered(DiscoveredEventArgs args) {
+    // logger.info(args.advertisement.serviceUUIDs.toString());
+    // if (args.advertisement.serviceUUIDs.toList().contains(serviceUuid.toString())) {
+    //   return;
+    // }
     if (args.advertisement.manufacturerSpecificData.isEmpty) {
       return;
     }
     final manufacturerData = args.advertisement.manufacturerSpecificData[0].data;
+    // logger.info('ManifacturerData: $manufacturerData');
     // Parse iBeacon manufacturer data
-    if (manufacturerData.length >= 25 && manufacturerData[0] == 0x4C && manufacturerData[1] == 0x00) {
+    logger.info(
+        'ManufacturerData length: ${manufacturerData.length}: [0] ${manufacturerData[0]}, [1] ${manufacturerData[1]}');
+    if (manufacturerData.length >= 25) {
       try {
         final uuid = _extractUuid(manufacturerData.sublist(4, 20));
         final major = (manufacturerData[20] << 8) + manufacturerData[21];
         final minor = (manufacturerData[22] << 8) + manufacturerData[23];
+        logger.info('ManufacturerData: UUID: $uuid, Major: $major, Minor: $minor');
         final txPower = manufacturerData[24].toSigned(8);
 
         final estimatedDistance = _estimateDistance(args.rssi, txPower);
