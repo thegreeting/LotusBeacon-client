@@ -125,13 +125,19 @@ class BleProximityService {
     // Parse iBeacon manufacturer data
     logger.info(
         'ManufacturerData length: ${manufacturerData.length}: [0] ${manufacturerData[0]}, [1] ${manufacturerData[1]}');
-    if (manufacturerData.length >= 25) {
+    if (manufacturerData.length >= 23) {
       try {
-        final uuid = _extractUuid(manufacturerData.sublist(4, 20));
-        final major = (manufacturerData[20] << 8) + manufacturerData[21];
-        final minor = (manufacturerData[22] << 8) + manufacturerData[23];
+        // Adjust offset if company identifier code is present
+        int offset = 0;
+        if (manufacturerData.length > 23) {
+          offset = manufacturerData.length - 23;
+        }
+
+        final uuid = _extractUuid(manufacturerData.sublist(2 + offset, 18 + offset));
+        final major = (manufacturerData[18 + offset] << 8) + manufacturerData[19 + offset];
+        final minor = (manufacturerData[20 + offset] << 8) + manufacturerData[21 + offset];
         logger.info('ManufacturerData: UUID: $uuid, Major: $major, Minor: $minor');
-        final txPower = manufacturerData[24].toSigned(8);
+        final txPower = manufacturerData[22 + offset].toSigned(8);
 
         final estimatedDistance = _estimateDistance(args.rssi, txPower);
         final distance = estimatedDistance < 0.5
@@ -142,14 +148,14 @@ class BleProximityService {
 
         final proximity = LotusBeaconPhysicalHandshake(
           beaconId: args.peripheral.uuid.value.toString(),
-          rpid: uuid,
+          rpid: major.toString(),
           distance: distance,
           estimatedDistance: estimatedDistance,
           rssi: args.rssi,
           txPower: txPower,
           lastDetectedAt: DateTime.now(),
-          eventId: major.toString(),
-          userIndex: minor.toString(),
+          eventId: serviceUuid.toString(),
+          userIndex: major.toString(),
         );
 
         _proximityData[uuid] = proximity;
@@ -163,7 +169,7 @@ class BleProximityService {
 
   String _extractUuid(List<int> data) {
     final buffer = StringBuffer();
-    for (var i = 0; i < 16; i++) {
+    for (var i = 0; i < data.length; i++) {
       if (i == 4 || i == 6 || i == 8 || i == 10) {
         buffer.write('-');
       }
