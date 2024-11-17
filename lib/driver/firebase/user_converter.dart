@@ -11,6 +11,7 @@ class UserConverter {
       bio: json['bio'] as String? ?? '',
       createTime: createTime,
       updateTime: json.keys.contains('update_time') ? (json['update_time'] as Timestamp).toDate() : createTime,
+      eventUserIndex: json['event_user_index'] as int? ?? 0,
     );
   }
 
@@ -21,6 +22,7 @@ class UserConverter {
       'bio': user.bio,
       'create_time': Timestamp.fromDate(user.createTime),
       'update_time': Timestamp.fromDate(user.updateTime),
+      'event_user_index': user.eventUserIndex,
     };
   }
 }

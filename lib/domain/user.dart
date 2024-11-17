@@ -6,6 +6,7 @@ class User {
     this.avatarUrl,
     required this.createTime,
     required this.updateTime,
+    required this.eventUserIndex,
   });
 
   final String userId;
@@ -14,6 +15,7 @@ class User {
   final String? avatarUrl;
   final DateTime createTime;
   final DateTime updateTime;
+  final int eventUserIndex;
 }
 
 class UpdateUserParams {
