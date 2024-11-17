@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lotusbeacon/presentation/organism/participants_listview.dart';
 import 'package:lotusbeacon/presentation/organism/peeping_physical_handshake.dart';
 import 'package:lotusbeacon/presentation/page/setting_page.dart';
 import 'package:lotusbeacon/usecase/event_provider.dart';
@@ -20,7 +21,11 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: 1);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: 2,
+    );
     _tabController.addListener(_handleTabChange);
   }
 
@@ -75,6 +80,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
           controller: _tabController,
           tabs: const [
             Tab(text: 'Participants'),
+            Tab(text: 'BLE'),
             Tab(text: 'Settings'),
           ],
         ),
@@ -82,8 +88,8 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
       body: TabBarView(
         controller: _tabController,
         children: const [
+          ParticipantsListView(), // Replace with actual greetings data
           PeepingPhysicalHandshake(),
-          //const ParticipantsListView(), // Replace with actual greetings data
           SettingPage(), // Placeholder for Settings content
         ],
       ),
