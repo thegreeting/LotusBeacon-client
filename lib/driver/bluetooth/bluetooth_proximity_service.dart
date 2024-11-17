@@ -83,9 +83,7 @@ class BleProximityService {
 
   Future<void> startScanning() async {
     logger.info('Start scanning');
-    await _centralManager.startDiscovery(
-        // serviceUUIDs: [serviceUuid],
-        );
+    await _centralManager.startDiscovery();
   }
 
   Future<void> startCycle(int eventUserIndex, int rpid) async {
@@ -106,8 +104,11 @@ class BleProximityService {
       }
     });
 
+    await stopAdvertising();
+
     // 初回は広告から開始
     await startAdvertising(eventUserIndex, rpid);
+    await Future.delayed(const Duration(seconds: 2));
     await startScanning();
     _isAdvertising = true;
   }
@@ -116,35 +117,39 @@ class BleProximityService {
     if (args.advertisement.manufacturerSpecificData.isEmpty) {
       return;
     }
-    
+
     final manufacturerData = args.advertisement.manufacturerSpecificData[0].data;
-    
+
     // iBeaconパケットの基本検証
     // 1. 長さが最低26バイト (1A + FF + 4C00 + 02 + 15 + UUID(16) + Major(2) + Minor(2) + Power(1))
     if (manufacturerData.length < 26) {
+      logger.fine('Invalid iBeacon data length: ${manufacturerData.length}');
       return;
     }
-    
+    logger.info('Manufacturer data: ${manufacturerData.length} bytes');
+
     // 2. Apple社の企業識別子 (0x004C) の確認
-    if (manufacturerData[0] != 0x4C || manufacturerData[1] != 0x00) {
+    if (manufacturerData[0] != 0x004C || manufacturerData[1] != 0x00) {
+      logger.fine('Invalid iBeacon data: ${manufacturerData[0]}, ${manufacturerData[1]}');
       return;
     }
-    
+
     // 3. iBeacon識別子の確認 (0x02, 0x15)
     if (manufacturerData[2] != 0x02 || manufacturerData[3] != 0x15) {
+      logger.fine('Invalid iBeacon data: ${manufacturerData[2]}, ${manufacturerData[3]}');
       return;
     }
 
     try {
       // UUID: 4バイト目から16バイト分
       final uuid = _extractUuid(manufacturerData.sublist(4, 20));
-      
+
       // Major: 20-21バイト目
       final major = (manufacturerData[20] << 8) + manufacturerData[21];
-      
+
       // Minor: 22-23バイト目
       final minor = (manufacturerData[22] << 8) + manufacturerData[23];
-      
+
       // Power: 24バイト目
       final txPower = manufacturerData[24].toSigned(8);
 
@@ -157,14 +162,14 @@ class BleProximityService {
 
       final proximity = LotusBeaconPhysicalHandshake(
         beaconId: args.peripheral.uuid.value.toString(),
-        rpid: major.toString(),
         distance: distance,
         estimatedDistance: estimatedDistance,
-        rssi: args.rssi,
         txPower: txPower,
+        rssi: args.rssi,
         lastDetectedAt: DateTime.now(),
         eventId: serviceUuid.toString(),
         userIndex: major.toString(),
+        rpid: minor.toString(),
       );
 
       _proximityData[uuid] = proximity;
@@ -206,6 +211,7 @@ class BleProximityService {
   }
 
   void dispose() {
+    logger.info('🟥 BLE service disposed');
     _cycleTimer?.cancel();
     _beaconBroadcast.stop();
     _discoveredSubscription.cancel();
