@@ -120,23 +120,23 @@ class BleProximityService {
 
     final manufacturerData = args.advertisement.manufacturerSpecificData[0].data;
 
-    // iBeaconパケットの基本検証
-    // 1. 長さが最低26バイト (1A + FF + 4C00 + 02 + 15 + UUID(16) + Major(2) + Minor(2) + Power(1))
-    if (manufacturerData.length < 26) {
-      logger.fine('Invalid iBeacon data length: ${manufacturerData.length}');
-      return;
-    }
-    logger.info('Manufacturer data: ${manufacturerData.length} bytes');
-
-    // 2. Apple社の企業識別子 (0x004C) の確認
-    if (manufacturerData[0] != 0x004C || manufacturerData[1] != 0x00) {
-      logger.fine('Invalid iBeacon data: ${manufacturerData[0]}, ${manufacturerData[1]}');
+    // iBeaconパケットの検証
+    // 標準的なiBeaconパケットは27バイト
+    // (1A + FF + 4C00 + 02 + 15 + UUID(16) + Major(2) + Minor(2) + Power(1))
+    if (manufacturerData.length != 27) {
+      logger.fine('Invalid iBeacon data length: ${manufacturerData.length} bytes (expected 27)');
       return;
     }
 
-    // 3. iBeacon識別子の確認 (0x02, 0x15)
+    // Apple社の企業識別子 (0x004C)
+    if (manufacturerData[0] != 0x4C || manufacturerData[1] != 0x00) {
+      logger.fine('Invalid manufacturer ID: ${manufacturerData[0].toRadixString(16)}${manufacturerData[1].toRadixString(16)} (expected 4C00)');
+      return;
+    }
+
+    // iBeacon識別子 (0x02, 0x15)
     if (manufacturerData[2] != 0x02 || manufacturerData[3] != 0x15) {
-      logger.fine('Invalid iBeacon data: ${manufacturerData[2]}, ${manufacturerData[3]}');
+      logger.fine('Invalid iBeacon identifier: ${manufacturerData[2].toRadixString(16)}${manufacturerData[3].toRadixString(16)} (expected 0215)');
       return;
     }
 
