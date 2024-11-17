@@ -120,11 +120,14 @@ class BleProximityService {
 
     final manufacturerData = args.advertisement.manufacturerSpecificData[0].data;
 
+    // Debug log raw data
+    logger.fine('Raw manufacturer data (${manufacturerData.length} bytes): ${manufacturerData.map((e) => e.toRadixString(16).padLeft(2, '0')).join(' ')}');
+
     // iBeaconパケットの検証
-    // 標準的なiBeaconパケットは27バイト
+    // 標準的なiBeaconパケットは26または27バイト
     // (1A + FF + 4C00 + 02 + 15 + UUID(16) + Major(2) + Minor(2) + Power(1))
-    if (manufacturerData.length != 27) {
-      logger.fine('Invalid iBeacon data length: ${manufacturerData.length} bytes (expected 27)');
+    if (manufacturerData.length != 26 && manufacturerData.length != 27) {
+      logger.fine('Invalid iBeacon data length: ${manufacturerData.length} bytes (expected 26 or 27)');
       return;
     }
 
