@@ -38,5 +38,10 @@ doc/api/
 # resources
 res/
 
+# Firebase
+firebase_options.dart
+GoogleService-Info.plist
+firebase.json
+
 # AI Agent
 .aider*

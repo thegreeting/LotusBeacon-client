@@ -44,16 +44,3 @@ Future<void> participateUserOnEventOrHardRegisterIfNeeded({
 
   // TODO(knaoe): update web2 storage. event.participants
 }
-
-// Future<void> unparticipateUserOnEventOrHardUnregisterIfNeeded({
-//   required String eventId,
-//   required String userId,
-// }) async {
-//   // TODO(knaoe): call to Contract to get eventUserIndex
-
-//   // TODO(knaoe): call to Contract to unregister user on event if registered
-
-//   // TODO(knaoe): update web2 storage. profile
-
-//   // TODO(knaoe): update web2 storage. event.participants
-// }

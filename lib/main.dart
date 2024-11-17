@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:lotusbeacon/application/app.dart';
 Future<void> main() async {
   hierarchicalLoggingEnabled = true;
   WidgetsFlutterBinding.ensureInitialized();
+  final Future<FirebaseApp> _ = Firebase.initializeApp();
   runApp(
     buildRunnableApp(
       isWeb: kIsWeb,
