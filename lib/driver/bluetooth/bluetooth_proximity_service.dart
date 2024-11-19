@@ -4,9 +4,12 @@ import 'dart:math';
 
 import 'package:beacon_broadcast/beacon_broadcast.dart';
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:lotusbeacon/usecase/auth_provider.dart';
 
 import '../../../application/config/logger.dart';
+import '../../application/fixture/user_fixture.dart';
 import '../../domain/physical_proximity.dart';
 
 const txPower = -59;
@@ -32,7 +35,10 @@ class BleProximityService {
   late final StreamSubscription _discoveredSubscription;
   late final StreamSubscription _stateChangedSubscription;
 
-  BleProximityService({
+  final Ref ref;
+
+  BleProximityService(
+    this.ref, {
     required String eventId,
   }) : serviceUuid = UUID.fromString(eventId) {
     _initBeacon();
@@ -83,7 +89,7 @@ class BleProximityService {
 
   Future<void> startScanning() async {
     logger.info('Start scanning');
-    await _centralManager.startDiscovery(serviceUUIDs: [serviceUuid]);
+    await _centralManager.startDiscovery();
   }
 
   Future<void> startCycle(int eventUserIndex, int rpid) async {
@@ -108,7 +114,7 @@ class BleProximityService {
 
     // 初回は広告から開始
     await startAdvertising(eventUserIndex, rpid);
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 4));
     await startScanning();
     _isAdvertising = true;
   }
@@ -117,9 +123,11 @@ class BleProximityService {
     if (args.advertisement.manufacturerSpecificData.isEmpty) {
       return;
     }
-    if (args.rssi < 100) {
+    logger.finest('Discovered: BLE');
+    if (args.rssi < -60) {
       return;
     }
+    logger.finest('Discovered: BLE RSSI > 100');
 
     final manufacturerData = args.advertisement.manufacturerSpecificData[0].data.sublist(0);
     final serviceDatas = args.advertisement.serviceData;
@@ -137,6 +145,40 @@ class BleProximityService {
       logger.fine('Invalid iBeacon data length: ${manufacturerData.length} bytes (expected 26 or 27)');
       return;
     }
+
+    // mock
+    final currentUserId = ref.read(currentUserIdProvider);
+    var major = 0;
+    var minor = 0;
+    if (currentUserId == UserFixture.iphone16pro().userId) {
+      major = UserFixture.ipadmini().eventUserIndex!;
+      minor = UserFixture.ipadmini().eventUserIndex!;
+    } else {
+      major = UserFixture.iphone16pro().eventUserIndex!;
+      minor = UserFixture.iphone16pro().eventUserIndex!;
+    }
+    final estimatedDistance = _estimateDistance(args.rssi, txPower);
+    final distance = estimatedDistance < 0.5
+        ? EstimatedDistance.immediate
+        : estimatedDistance < 3.0
+            ? EstimatedDistance.near
+            : EstimatedDistance.far;
+    final proximity = LotusBeaconPhysicalHandshake(
+      beaconId: args.peripheral.uuid.value.toString(),
+      distance: distance,
+      estimatedDistance: estimatedDistance,
+      txPower: txPower,
+      rssi: args.rssi,
+      lastDetectedAt: DateTime.now(),
+      eventId: serviceUuid.toString(),
+      userIndex: major.toString(),
+      rpid: minor.toString(),
+    );
+
+    _proximityData[major.toString()] = proximity;
+    _proximityController.add(proximity);
+    logger.info('Discovered $proximity');
+    return;
 
     // Apple社の企業識別子 (0x004C)
     if (manufacturerData[0] != 0x4C || manufacturerData[1] != 0x00) {

@@ -13,7 +13,7 @@ class RegistrationRequiredException implements Exception {
 // 基本のBLEサービスプロバイダ
 final bleServiceProvider = Provider((ref) {
   final event = ref.watch(selectedEventProvider);
-  return BleProximityService(eventId: event.id);
+  return BleProximityService(ref, eventId: event.id);
 });
 
 // BLEサービスとRPIDを連携させるファサードプロバイダ

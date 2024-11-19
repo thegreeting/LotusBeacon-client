@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lotusbeacon/application/fixture/user_fixture.dart';
 import 'package:lotusbeacon/domain/physical_proximity.dart';
 import 'package:lotusbeacon/usecase/bluetooth_provider.dart';
 import 'package:lotusbeacon/usecase/rpid_provider.dart';
@@ -159,6 +160,7 @@ class _PeepingPhysicalHandshakeState extends ConsumerState<PeepingPhysicalHandsh
                 itemCount: proximities.length,
                 itemBuilder: (context, index) {
                   final proximity = proximities[index];
+                  final fixtureUser = UserFixture.findUserByEventUserIndex(int.parse(proximity.userIndex));
                   return AnimatedScale(
                     duration: const Duration(milliseconds: 300),
                     scale: 1.0,
@@ -178,7 +180,7 @@ class _PeepingPhysicalHandshakeState extends ConsumerState<PeepingPhysicalHandsh
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'RPID: ${proximity.rpid}',
+                                      fixtureUser.userId,
                                       style: Theme.of(context).textTheme.titleMedium,
                                     ),
                                     const SizedBox(height: 8),
@@ -198,8 +200,8 @@ class _PeepingPhysicalHandshakeState extends ConsumerState<PeepingPhysicalHandsh
                                       ],
                                     ),
                                     const SizedBox(height: 4),
-                                    Text('EventID: ${proximity.eventId}'),
-                                    Text('UserIndex: ${proximity.userIndex}'),
+                                    // Text('EventID: ${proximity.eventId}'),
+                                    Text('EventUserIndex: ${proximity.userIndex}'),
                                   ],
                                 ),
                               ),

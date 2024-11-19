@@ -81,7 +81,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
           controller: _tabController,
           tabs: const [
             Tab(text: 'Participants'),
-            Tab(text: 'BLE'),
+            Tab(text: 'BLE(Debug)'),
             Tab(text: 'Settings'),
           ],
         ),

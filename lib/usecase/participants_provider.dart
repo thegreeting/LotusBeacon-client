@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lotusbeacon/application/fixture/user_fixture.dart';
 import 'package:lotusbeacon/driver/firebase/firestore_provider.dart';
 import 'package:lotusbeacon/usecase/user_provider.dart';
 
@@ -7,8 +8,9 @@ final participantUserIdsOnEventProvider = StreamProvider.family<List<String>, St
   ref,
   eventId,
 ) {
+  return Stream.value(UserFixture.users.map((user) => user.userId).toList());
   // TODO(knaoe): To be impl.
-  return const Stream.empty();
+  // return const Stream.empty();
 });
 
 // Soft participation means that the user has participated in the event, but confirmed by web2 not web3.

@@ -10,6 +10,7 @@ class ParticipantsListView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final event = ref.watch(selectedEventProvider);
     final mutualParticipantsAsync = ref.watch(mutualGreetingParticipantsOnEventProvider(event.id));
+    final otherButNearbyParticipants = ref.watch(noneGreetingButNearByParticipantsOnEventProvider(event.id));
     final otherParticipants = ref.watch(noneGreetingParticipantsOnEventProvider(event.id));
 
     return CustomScrollView(
@@ -53,7 +54,7 @@ class ParticipantsListView extends ConsumerWidget {
             ),
           ),
         ),
-        otherParticipants.when(
+        otherButNearbyParticipants.when(
           data: (participants) {
             if (participants.isEmpty) {
               return const SliverToBoxAdapter(

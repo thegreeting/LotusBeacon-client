@@ -33,4 +33,17 @@ class UserFixture {
       eventUserIndex: 20,
     );
   }
+
+  static List<User> users = [
+    ipadmini(),
+    iphone16pro(),
+  ];
+
+  static User? findUser(String userId) {
+    return users.firstWhere((user) => user.userId == userId);
+  }
+
+  static User findUserByEventUserIndex(int eventUserIndex) {
+    return users.firstWhere((user) => user.eventUserIndex == eventUserIndex);
+  }
 }
